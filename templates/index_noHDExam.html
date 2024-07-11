@@ -1,0 +1,469 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<style> iframe{float:right;} </style>
+	<iframe scrolling="no" overflow="hidden"
+        style="margin:0; padding:0; border:none; width:535px; height:110px; scrolling:no; overflow:hidden;
+	allowTransparency:"true"; "
+	src="{{ url_for('pdf_view') }}">
+	 frameBorder="0" scrolling="No"	</iframe>
+    <title>HDX Heatmap Generator - Vahidi Lab</title>
+
+<style>
+.hidden {
+  display: none;
+}
+.resizedTextbox {
+  width: 50px; height: 15.5px
+}
+
+.resizedColbox {
+ width: 75px; height: 15.5px
+}
+
+<! These following 3 style codes were produced by Jordan Finneran at https://dev.to/jordanfinners/creating-a-collapsible-section-with-nothing-but-html-4ip9 >
+
+details { 
+  user-select: none;
+}
+summary {
+  justify-content: center;
+  display: flex;
+  cursor: pointer;
+}
+summary::-webkit-details-marker {
+  display: none;
+}
+</style>
+
+</head>
+<body>
+    <h1>Generate HDX Heatmap</h1>
+
+    <form action="/generate_pdf" method="post" enctype="multipart/form-data">
+        <label for="csv_file">Upload DynamX Output Cluster .csv File:</label>
+        <input type="file" id="csv_file" name="csv_file" required/><br><br>
+
+	<p> <b> Font Sizes: </b></p>
+        <label for="font_size">Font Size:</label>
+	<input type="text" id="font_size" name="font_size" class="resizedTextbox" required/><br><br>
+
+        <label for="font_size_title">Title Size:</label>
+        <input type="text" id="font_size_title" name="font_size_title" class="resizedTextbox" required/><br><br>
+	
+	<p><b> Horizontal or Vertical Plots: </b></p>	
+	<input type="radio" id="1" name="h_or_v" value="1" required>
+	<label for="1">Horizontal</label><br>
+	<input type="radio" id="2" name="h_or_v" value="2">
+	<label for="2">Vertical</label><br><br>
+
+	<p><b> Choose Bounds/Colors Input Type: </b></p>
+
+	<input type="radio" name="option" id="option1" value="3" onchange="showOptions()" required>
+	<label for="option1">Choose Range and Number of Shades</label>
+
+	<input type="radio" name="option" id="option2" value="1" onchange="showOptions()">
+	<label for="option2">Choose Colors and Set Bounds</label> 
+
+	<input type="radio" name="option" id="option4" value="4" onchange="showOptions()">
+	<label for="option4">Input Color Hex-Dec and Bounds</label>
+
+	<input type="radio" name="option" id="option3" value="2" onchange="showOptions()">
+	<label for="option3">Range Based on Data</label> <br>
+	
+
+
+	<div id="option1Div" class="hidden">
+    		<p><b> Set Range and Shades </b> </p>
+    		<label for="max_range">Maximum Range:</label>
+    		<input type="text" id="max_range" name="max_range" class="resizedTextbox"/><br><br>
+
+    		<label for="num_shades">Number of Shades:</label>
+    		<input type="number" id="num_shades" name="num_shades" class="resizedTextbox" min="2"/> 		<br><br>
+
+		<label for="color_chooserRS">Optional: choose colors to use instead of Blue and Red</label>
+		<small>please select the box beside the inputs to confirm you wish to use this option
+		</small><br>
+		<input type="checkbox" id="alt_col_RS" name="alt_col_RS" value="1">
+    		<b>Input Negative then Positive Color to use:</b>
+			<input type="text" id="negcolRS" name="negcolRS" class="resizedColbox"/>
+			<input type="text" id="poscolRS" name="poscolRS" class="resizedColbox"/><br>
+		<small>Please input colors as hexidecimal values beginning with a pound sign
+		</small><br>
+		
+	</div>
+
+
+	<div id="option2Div" class="hidden">
+    		<p><b> Choose Colours: </b></p>
+    		<label for="neg_col">Negative Values:</label> 
+    		<select name="neg_col" id="neg_col"> 
+        		<option value="2">Blue</option> 
+        		<option value="1">Red</option> 
+        		<option value="3">Green</option>  
+			<option value="4">Yellow</option>
+			<option value="5">Purple</option>
+			<option value="6">Black</option>
+    		</select> <br>
+
+    		<label for="pos_col">Positive Values:</label> 
+    		<select name="pos_col" id="pos_col"> 
+        		<option value="2">Red</option> 
+        		<option value="1">Blue</option> 
+        		<option value="3">Green</option>
+			<option value="4">Yellow</option>
+			<option value="5">Purple</option>
+			<option value="6">Black</option>
+    		</select> <br><br>
+
+		<p title="Bounds should start with the lowest value, and end with the highest. For example: -1.5, -1, -0.5, 0.5, 1, 1.5 where values between -0.5 and 0.5 will be white. Do not include 0 as a bound, it will not function. There should be at least 2 entries per list, and an equal number of positive and negative bounds.">
+		<b>Input Bounds: </b>
+		(hover over me for more information)
+		</p>
+		Negative bounds:<br>
+		<input type="text" id="inputbn1" name="inputbn1" class="resizedTextbox"/>
+		<input type="text" id="inputbn2" name="inputbn2" class="resizedTextbox"/>
+		<input type="text" id="inputbn3" name="inputbn3" class="resizedTextbox"/>
+		<input type="text" id="inputbn4" name="inputbn4" class="resizedTextbox"/>
+		<input type="text" id="inputbn5" name="inputbn5" class="resizedTextbox"/>
+		<input type="text" id="inputbn6" name="inputbn6" class="resizedTextbox"/>
+		<input type="text" id="inputbn7" name="inputbn7" class="resizedTextbox"/>
+		<input type="text" id="inputbn8" name="inputbn8" class="resizedTextbox"/> <br>
+		Positive bounds:<br>
+		<input type="text" id="inputbp1" name="inputbp1" class="resizedTextbox"/>
+		<input type="text" id="inputbp2" name="inputbp2" class="resizedTextbox"/>
+		<input type="text" id="inputbp3" name="inputbp3" class="resizedTextbox"/>
+		<input type="text" id="inputbp4" name="inputbp4" class="resizedTextbox"/>
+		<input type="text" id="inputbp5" name="inputbp5" class="resizedTextbox"/>
+		<input type="text" id="inputbp6" name="inputbp6" class="resizedTextbox"/>
+		<input type="text" id="inputbp7" name="inputbp7" class="resizedTextbox"/>
+		<input type="text" id="inputbp8" name="inputbp8" class="resizedTextbox"/> 
+	</div>
+	
+	<div id="option3Div" class="hidden">
+		<br>
+    		<i> The data range will be determined by the maximum absolute value in the provided data, with 7 shades of colours. </i><br><br>
+		<label for="color_chooserRS">Optional: choose colors to use instead of Blue and Red</label>
+		<small>please select the box beside the inputs to confirm you wish to use this option
+		</small><br>
+		<input type="checkbox" id="alt_col_DD" name="alt_col_DD" value="1">
+    		<b>Input Negative then Positive Color to use:</b>
+			<input type="text" id="negcolDD" name="negcolDD" class="resizedColbox"/>
+			<input type="text" id="poscolDD" name="poscolDD" class="resizedColbox"/><br>
+		<small>Please input colors as hexidecimal values beginning with a pound sign
+		</small><br>
+
+	</div>
+	
+	<div id="option4Div" class="hidden">
+		<small>Please input colors as hexadecimal values, beginning with a pound sign (eg. #FFFFFF)
+		</small><br>
+
+		<input type="radio" name="optionc" id="optionc1" value="1" onchange="showColOptions()">
+		<label for="optionc1">Input Darkest Color Values</label>
+
+		<input type="radio" name="optionc" id="optionc2" value="2" onchange="showColOptions()">
+		<label for="optionc2">Input All Color Values</label>
+		<br><br>
+
+		<div id="DarkestColDiv" class="hidden">
+		<b>Input Colors:</b><br>
+		Input Darkest Color for Negative Values:
+		<input type="text" id="negcolorid" name="negcolorid" class="resizedColbox"/><br><br>
+		Input Darkest Color for Positive Values:
+		<input type="text" id="poscolorid" name="poscolorid" class="resizedColbox"/><br><br>
+		</div>
+
+		<div id="InputAllColDiv" class="hidden">
+		<b>Input Colors:</b><br>
+		<small>Note: Each color list (pos/negative) should be 1 shorter than each bound list (pos/negative), additional inputs will be ignored</small><br>
+		Input Darkest Negative Color to Lightest Negative Color: <br>
+		<input type="text" id="ninputcol1" name="ninputcol1" class="resizedColbox"/>
+		<input type="text" id="ninputcol2" name="ninputcol2" class="resizedColbox"/>
+		<input type="text" id="ninputcol3" name="ninputcol3" class="resizedColbox"/>
+		<input type="text" id="ninputcol4" name="ninputcol4" class="resizedColbox"/>
+		<input type="text" id="ninputcol5" name="ninputcol5" class="resizedColbox"/>
+		<input type="text" id="ninputcol6" name="ninputcol6" class="resizedColbox"/>
+		<input type="text" id="ninputcol7" name="ninputcol7" class="resizedColbox"/> <br><br>
+		Input Lightest Positive Color to Darkest Positive Color: <br>
+		<input type="text" id="pinputcol1" name="pinputcol1" class="resizedColbox"/>
+		<input type="text" id="pinputcol2" name="pinputcol2" class="resizedColbox"/>
+		<input type="text" id="pinputcol3" name="pinputcol3" class="resizedColbox"/>
+		<input type="text" id="pinputcol4" name="pinputcol4" class="resizedColbox"/>
+		<input type="text" id="pinputcol5" name="pinputcol5" class="resizedColbox"/>
+		<input type="text" id="pinputcol6" name="pinputcol6" class="resizedColbox"/>
+		<input type="text" id="pinputcol7" name="pinputcol7" class="resizedColbox"/> <br><br>
+		</div>
+
+		<div>
+		<p title="Bounds should start with the lowest value, and end with the highest. For example: -1.5, -1, -0.5, 0.5, 1, 1.5 where values between -0.5 and 0.5 will be white. Do not include 0 as a bound, it will not function. There should be at least 2 entries per list, and an equal number of positive and negative bounds.">
+		<b>Input Bounds: </b>
+		(hover over me for more information)
+		</p>
+		Negative bounds:<br>
+		<input type="text" id="inputbn14" name="inputbn14" class="resizedTextbox"/>
+		<input type="text" id="inputbn24" name="inputbn24" class="resizedTextbox"/>
+		<input type="text" id="inputbn34" name="inputbn34" class="resizedTextbox"/>
+		<input type="text" id="inputbn44" name="inputbn44" class="resizedTextbox"/>
+		<input type="text" id="inputbn54" name="inputbn54" class="resizedTextbox"/>
+		<input type="text" id="inputbn64" name="inputbn64" class="resizedTextbox"/>
+		<input type="text" id="inputbn74" name="inputbn74" class="resizedTextbox"/>
+		<input type="text" id="inputbn84" name="inputbn84" class="resizedTextbox"/> <br><br>
+		Positive bounds:<br>
+		<input type="text" id="inputbp14" name="inputbp14" class="resizedTextbox"/>
+		<input type="text" id="inputbp24" name="inputbp24" class="resizedTextbox"/>
+		<input type="text" id="inputbp34" name="inputbp34" class="resizedTextbox"/>
+		<input type="text" id="inputbp44" name="inputbp44" class="resizedTextbox"/>
+		<input type="text" id="inputbp54" name="inputbp54" class="resizedTextbox"/>
+		<input type="text" id="inputbp64" name="inputbp64" class="resizedTextbox"/>
+		<input type="text" id="inputbp74" name="inputbp74" class="resizedTextbox"/>
+		<input type="text" id="inputbp84" name="inputbp84" class="resizedTextbox"/> 
+		</div>
+
+	</div>
+
+	<script>
+	function showOptions() {
+    		var option1Div = document.getElementById("option1Div");
+    		var option2Div = document.getElementById("option2Div");
+		var option3Div = document.getElementById("option3Div");
+		var option4Div = document.getElementById("option4Div");
+    		if (document.getElementById("option1").checked) {
+        		option1Div.classList.remove("hidden");
+        		option2Div.classList.add("hidden");
+			option3Div.classList.add("hidden");
+			option4Div.classList.add("hidden");
+    		} else if (document.getElementById("option2").checked) {
+        		option1Div.classList.add("hidden");
+        		option2Div.classList.remove("hidden");
+			option3Div.classList.add("hidden");
+			option4Div.classList.add("hidden");
+    		} else if (document.getElementById("option3").checked) {
+			option1Div.classList.add("hidden");
+			option2Div.classList.add("hidden");
+			option3Div.classList.remove("hidden");
+			option4Div.classList.add("hidden");
+		}else if (document.getElementById("option4").checked) {
+			option1Div.classList.add("hidden");
+			option2Div.classList.add("hidden");
+			option3Div.classList.add("hidden");
+			option4Div.classList.remove("hidden");
+		}
+	}
+	function showColOptions() {
+    		var DarkestColDiv = document.getElementById("DarkestColDiv");
+    		var InputAllColDiv = document.getElementById("InputAllColDiv");
+    		if (document.getElementById("optionc1").checked) {
+        		DarkestColDiv.classList.remove("hidden");
+        		InputAllColDiv.classList.add("hidden");
+    		} else if (document.getElementById("optionc2").checked) {
+        		DarkestColDiv.classList.add("hidden");
+        		InputAllColDiv.classList.remove("hidden");
+		}
+	}
+
+	</script> <br><br>
+
+	<details>
+	<summary>
+	<b> →   Click Here for Advanced Options   ← </b>
+	</summary>
+
+	<p>
+
+		<p>Select boxes next to desired Advanced Options </p>
+
+
+		<p title="If there are D exposure time points that are not interesting, they should be placed into the Drop Time List. The time points must perfectly match the 'Exposure' entries in the input csv file. E.g. 0.167, 1, 60.000004"><small>
+   		 How to use the Drop Times Option (hover over me!)</small>
+		</p>
+    		<input type="checkbox" id="droptime" name="droptime" value="1">
+    		<b>Drop Times:</b>
+			<input type="text" id="dt1" name="dt1" class="resizedTextbox"/>
+			<input type="text" id="dt2" name="dt2" class="resizedTextbox"/>
+			<input type="text" id="dt3" name="dt3" class="resizedTextbox"/>
+			<input type="text" id="dt4" name="dt4" class="resizedTextbox"/>
+			<input type="text" id="dt5" name="dt5" class="resizedTextbox"/>
+			<input type="text" id="dt6" name="dt6" class="resizedTextbox"/><br>
+
+
+		<p title="If there are peptides which are not wanted in the output, these should be placed into the Drop Peptides List. Entries should consist of 3 items: protein ID, peptide start, and peptide end. E.g. PSB_MYCTU, 1, 8, PSA_MYCTU 42, 52 excludes 2 peptides from plotting: one from 'PSB_MYCTU', starting at residue 1 and ending at residue 8, and another peptide from 'PSA_MYCTU', spanning residues 42 to 52."><small>
+   		 How to use the Drop Peptides Option </small>
+		</p>
+		<input type="checkbox" id="droppept" name="droppept" value="1">
+		<b>Drop Peptides:</b> Protein Name: 
+		<font color="#FFFFFF"> ................ </font>  
+		Start Residue:
+		<font color="#FFFFFF"> ..... </font>   
+		End Residue:<br>
+
+		<font color="#FFFFFF"> ...................... </font>
+		<input type="text" id="dpeppro1" name="dpeppro1">
+		<font color="#FFFFFF"> .......... </font>
+		<input type="text" id="dpepst1" name="dpepst1" class="resizedTextbox"/>
+		<font color="#FFFFFF"> ............ </font>
+		<input type="text" id="dpepend1" name="dpepend1" class="resizedTextbox"/><br>
+
+		<font color="#FFFFFF"> ...................... </font>
+		<input type="text" id="dpeppro2" name="dpeppro2">
+		<font color="#FFFFFF"> .......... </font>
+		<input type="text" id="dpepst2" name="dpepst2" class="resizedTextbox"/>
+		<font color="#FFFFFF"> ............ </font>
+		<input type="text" id="dpepend2" name="dpepend2" class="resizedTextbox"/><br>
+
+		<font color="#FFFFFF"> ...................... </font>
+		<input type="text" id="dpeppro3" name="dpeppro3">
+		<font color="#FFFFFF"> .......... </font>
+		<input type="text" id="dpepst3" name="dpepst3" class="resizedTextbox"/>
+		<font color="#FFFFFF"> ............ </font>
+		<input type="text" id="dpepend3" name="dpepend3" class="resizedTextbox"/><br>
+
+		<font color="#FFFFFF"> ...................... </font>
+		<input type="text" id="dpeppro4" name="dpeppro4">
+		<font color="#FFFFFF"> .......... </font>
+		<input type="text" id="dpepst4" name="dpepst4" class="resizedTextbox"/>
+		<font color="#FFFFFF"> ............ </font>
+		<input type="text" id="dpepend4" name="dpepend4" class="resizedTextbox"/>
+    		<br>
+
+		
+		<p title="If there are entire proteins which are not wanted in the heatmap output, their IDs can be specified in the Drop Proteins List. E.g. PSA_MYCTU. Another way to avoid unwanted proteins in the heatmap is to specify which state comparisons you would like in the State Lists option"><small>
+   		 How to use the Drop Proteins Option </small>
+		</p>
+		<input type="checkbox" id="dropprot" name="dropprot" value="1">
+		<b>Drop Proteins:</b>
+    			<input type="text" id="dpro1" name="dpro1" class="resizedTextbox"/>
+			<input type="text" id="dpro2" name="dpro2" class="resizedTextbox"/>
+			<input type="text" id="dpro3" name="dpro3" class="resizedTextbox"/>
+			<input type="text" id="dpro4" name="dpro4" class="resizedTextbox"/>
+			<input type="text" id="dpro5" name="dpro5" class="resizedTextbox"/>
+			<input type="text" id="dpro6" name="dpro6" class="resizedTextbox"/><br>
+
+
+		<p title="When protein sequence used to analyze data in DynamX contains a propeptide, residue numbering in DynamX output will include that propeptide. Sometimes it is desirable to renumber residues to correspond to a mature, processed protein sequence. This list allows you to do so with this script. If renumbering is desired, provide a dictionary indicating how much to subtract from residue numbers in which protein ID. Protein ID must be exactly as it appears in 'Protein' column of DynamX csv output file. E.g. Protein 1 = PSB_MYCTU and Value 1 = 57 will subtract 57 from all peptides in the protein PSB_MYCTU"> <small>
+   		 How to use the Renumbering Dictionary </small>
+		</p>
+		<input type="checkbox" id="renumdict" name="renumdict" value="1">
+		<b>Renumbering Dictionary:</b>
+    		Protein 1: <input type="text" id="key1" name="key1" class="resizedTextbox"/>
+		Value 1: <input type="text" id="value1" name="value1" class="resizedTextbox"/> <br>
+		<font color="#FFFFFF"> .................................................. </font>
+		Protein 2: <input type="text" id="key2" name="key2" class="resizedTextbox"/>
+		Value 2: <input type="text" id="value2" name="value2" class="resizedTextbox"/>
+        	<br>
+
+
+		<p title="If DynamX is used to analyze data from a mutant protein, there are several changes in data entries compared to the wt protein:
+1) peptides containing mutated residues have different sequence;
+2) protein IDs assigned to these peptides are different from the wt protein;
+3) protein 'State' assigned to mutant protein data is different from the wt.
+If we want to plot D uptake difference between mutated peptide and the same peptide from wt protein, then protein ID of mutant and the peptide sequence needs to be altered so that the mutant appears as if wild type protein. This is a dictionary containing mutant protein IDs as keys and desired wt protein IDs as values. These IDs must exactly match the input .csv file. E.g.: PSB_T1A : PSB_MYCTU where 'PSB_T1A' is mutant and 'PSB_MYCTU' is wt. This variable must be provided for any mutant peptides to be changed into wt."><small>
+   		 How to use the Mutation ID Dictionary </small>
+		</p>
+		<input type="checkbox" id="mutiddict" name="mutiddict" value="1">
+		<b>Mutation ID Dictionary:</b>
+    		Mutant Protein ID: 
+		<input type="text" id="mutpro1" name="mutpro1" class="resizedTextbox"/><br>
+		<font color="#FFFFFF"> ........................................... </font>
+		Wild Type Protein ID:
+		<input type="text" id="wtpro1" name="wtpro1" class="resizedTextbox"/>
+		<br>
+		
+
+		<p title="If DynamX is used to analyze data from a mutant protein, there are several changes in data entries compared to the wt protein:
+1) peptides containing mutated residues have different sequence;
+2) protein IDs assigned to these peptides are different from the wt protein;
+3) protein 'State' assigned to mutant protein data is different from the wt.
+If we want to plot D uptake difference between mutated peptide and the same peptide from wt protein, then protein ID of mutant and the peptide sequence needs to be altered so that the mutant appears as if wild type protein. Rather than Mutation ID Dictionary, we can use this dictionary. The script will alter sequence of mutant peptides based on what's in the Mutation Dictionary. The Mutation Dictionary is a dictionary which contains as keys residue numbers and as values desired wt residues. E.g. {1 : 'T'} specifies that residue #1 is T in the wt protein."> <small>
+   		 How to use the Mutation Dictionary </small>
+		</p>
+		<input type="checkbox" id="mutdict" name="mutdict" value="1">
+		<b>Mutation Dictionary:</b>
+		Residue Number:
+    		<input type="text" id="mutdictres" name="mutdictres" class="resizedTextbox"/><br>
+		<font color="#FFFFFF"> .................................... </font>
+		Desired WT Residue:
+		<input type="text" id="mutdictwt" name="mutdictwt" class="resizedTextbox"/>
+		<br>
+
+
+		<p title="Use state lists to restrict the selection of states being compared. In such case, combinations not defined by these variables will be ignored. These lists must contain names of protein states exactly as they appear in the DynamX output 'State' column. State 2 will be subtracted from State 1. For example, if the input file contains D uptake data on 5 states: wt apo, bound to ligand #1, bound to ligand #2, mutant X, and mutant Y and we want to calculate D uptake differences of bound/mutant states from wt apo, the two lists would be: State List 1= 'ligand 1','ligand 2','mutant X','mutant Y' and State List 2 = 'wt apo','wt apo','wt apo','wt apo'"> <small>
+   		 How to use the State Lists </small>
+		</p>
+		<input type="checkbox" id="statelist" name="statelist" value="1">
+		<b>State List 1:</b>
+			<input type="text" id="s11" name="s11">
+			<input type="text" id="s12" name="s12">
+			<input type="text" id="s13" name="s13">
+			<input type="text" id="s14" name="s14">
+			<input type="text" id="s15" name="s15">
+			<input type="text" id="s16" name="s16"><br>
+		<font color="#FFFFFF"> ..... </font>
+		<b>State List 2:</b>
+			<input type="text" id="s21" name="s21">
+			<input type="text" id="s22" name="s22">
+			<input type="text" id="s23" name="s23">
+			<input type="text" id="s24" name="s24">
+			<input type="text" id="s25" name="s25">
+			<input type="text" id="s26" name="s26">
+		<br><br>
+
+	<small> Improvements are being worked on to accept additional inputs for the advanced options 	</small>
+	</div>
+	</p>
+	</details>
+
+	<br>
+
+	<b>Select to use 0 as a bound:</b>
+	<input type="checkbox" id="zerobound" name="zerobound" value="1"> 
+	<p style="display:inline" title="This will cause the heatmap to color every square. The colors closest to 0 will be the lightest color. Thus positive and negative values will apprear different no matter how close to zero. Do not include 0 in the list of bounds, the code will add it in."> <small>
+   		 **More Info** </small>
+		</p><br><br>
+
+
+
+	<b>Select if you wish to download PyMOL coloring scripts:</b>
+	<input type="checkbox" id="download_pymol" name="download_pymol" value="1"> 
+	<p style="display:inline" title="This will cause the heatmap and the pymol coloring scripts to be downloaded in a .zip file together, and you will need to extract from this file. To run the pymol scripts, open the protein in pymol, select file in the top left corner of pymol, then select run script, and choose the desired script. If numbering has not been corrected (see advanced options) the coloring may not align to the correct residues."> <small>
+   		 **More Info** </small>
+		</p>
+	<br><br>
+
+	<b>Select if you wish to download volcano plots:</b>
+	<input type="checkbox" id="scatterplot" name="scatterplot" value="1">
+	<p style="display:inline" title="This will cause the Generate PNG button to instead return a .zip file of JUST the volcano plots. If no p_value threshold is input the default will be 0.05."> <small>
+   		 **More Info** </small> </p>
+	<label for="max_range">p-value Threshold:</label>
+    	<input type="text" id="pthresh" name="pthresh" class="resizedTextbox"/> 
+	<br><br>
+
+	<b>Input DPI for image: </b>
+	<input type="checkbox" id="dif_dpi" name="dif_dpi" value="1">
+	<input type="number" id="dpi_in" name="dpi_in" max="400" class="resizedTextbox"/>
+	<p style="display:inline" title="If not chosen and input the default DPI will be 100. Increasing the DPI will increase the processing time. The maximum input is 400."> <small>
+   		 **More Info** </small>
+		</p>
+
+	<br><br>
+
+        <button type="submit">Generate PNG</button>
+
+	<br>
+    </form>
+<p><center>Please acknowledge Dr. Algirdas Velyvis, Kent Vosper, and Dr. Siavash Vahidi of the University of Guelph.
+<br>
+Please direct questions to kvosper@uoguelph.ca </center></p>
+
+
+    <form action="/reset_values" method="post" enctype="multipart/form-data">
+	<button type="submit">Reset Website/Run Again</button>
+    </form>
+
+
+
+</body>
+</html>
